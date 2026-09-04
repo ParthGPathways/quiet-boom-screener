@@ -1,0 +1,7 @@
+pandas
+requests
+yfinance
+lxml
+matplotlib
+jinja2
+pyarrow

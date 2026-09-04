@@ -1,0 +1,15 @@
+# Python virtual environment — recreate with: pip install -r requirements.txt
+.venv/
+
+# Downloaded/generated data — recreate by running the scripts in src/
+data/
+
+# Generated dashboard output
+site/
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
