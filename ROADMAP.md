@@ -23,7 +23,9 @@ Each milestone is independently CV-mentionable — the project has value even mi
 ### M2 — Database (SQL)
 - [x] 2.1 Design schema: companies / prices / fundamentals / industries → `data/db/screener.db`
 - [x] 2.2 Load all raw data into SQLite from Python
-- [ ] 2.3 Core queries: revenue growth by industry, margin trends (GROUP BY, JOINs, window functions)
+- [x] 2.3 Core queries: revenue growth by industry, margin trends (GROUP BY, JOINs, window functions)
+  - note: join fundamentals via a one-row-per-CIK CTE (dual-class tickers fan out otherwise)
+  - note: `HAVING quarters = 4` excludes partial years; TTM would be the upgrade
 - **Concepts:** relational schema design, SQL joins/aggregation/window functions
 
 ### M3 — The screens (Python + SQL)
