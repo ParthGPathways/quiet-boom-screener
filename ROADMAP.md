@@ -33,8 +33,12 @@ Each milestone is independently CV-mentionable — the project has value even mi
   - `src/boom_score.py`; median company (not aggregate), sub-industries with >=5 companies
   - breadth (>=70% of companies growing) is a gate, not a scored component
   - rates compared to a long baseline (2017-23), levels to a short one (2021-23)
-- [ ] 3.2 Quiet filter: AI-keyword screen on 10-K business descriptions + correlation vs AI basket
-- [ ] 3.3 Ranked "quiet boom" industry table
+- [x] 3.2 Quiet filter: correlation vs AI basket (`src/quiet_filter.py`)
+  - AI factor = 19-name equal-weighted basket MINUS equal-weighted universe, so market beta is removed
+  - 10-K keyword screen not built: the correlation screen already separated loud from quiet cleanly
+- [x] 3.3 Ranked "quiet boom" industry table (`src/rank_industries.py`)
+  - quiet_boom = z(boom_score) - z(ai_correlation), gated on acceleration > 0
+  - 19 industries qualify; utilities lead on capex, insurance on premium-cycle growth
 - **Concepts:** feature construction, z-scores/ranking, text screening, return correlation
 
 ### M4 — Valuation models (finance core)

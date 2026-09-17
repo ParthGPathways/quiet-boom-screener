@@ -181,12 +181,15 @@ scores = scores.sort_values("boom_score", ascending=False)
 
 # --- output ---------------------------------------------------------------------
 
-# Show the score alongside its ingredients: a single number nobody can audit is
-# worth less than a ranked number whose components are visible.
-show = scores[["companies", "boom_score", "acceleration", "breadth",
-               "margin_change", "capex_change", "growth_recent"]].round(2)
-show.columns = ["n", "score", "accel", "breadth", "margin_chg", "capex_chg", "growth"]
+# Printing happens only when this file is run directly, so that
+# rank_industries.py can import `scores` without a table appearing twice.
+if __name__ == "__main__":
+    # Show the score alongside its ingredients: a single number nobody can
+    # audit is worth less than a ranked number whose components are visible.
+    show = scores[["companies", "boom_score", "acceleration", "breadth",
+                   "margin_change", "capex_change", "growth_recent"]].round(2)
+    show.columns = ["n", "score", "accel", "breadth", "margin_chg", "capex_chg", "growth"]
 
-pd.set_option("display.width", 140)
-print(show.head(25).to_string())
-print(f"\n{len(scores)} industries scored")
+    pd.set_option("display.width", 140)
+    print(show.head(25).to_string())
+    print(f"\n{len(scores)} industries scored")
