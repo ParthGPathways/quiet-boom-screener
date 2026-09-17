@@ -1,7 +1,20 @@
-pandas
-requests
-yfinance
-lxml
-matplotlib
-jinja2
-pyarrow
+# Core data handling. pandas 2.1+ is required for DataFrame.stack(future_stack=True),
+# used when reshaping yfinance's wide output into long format.
+pandas>=2.1
+numpy>=1.24
+
+# HTTP for Wikipedia, the SEC ticker map, and EDGAR companyfacts.
+requests>=2.28
+
+# Daily price history.
+yfinance>=0.2
+
+# Not imported directly: pandas.read_html needs a parser to scrape the
+# Wikipedia constituent tables.
+lxml>=4.9
+
+# Not imported directly: pandas needs it to read and write .parquet.
+pyarrow>=14
+
+# Templating for the generated dashboard.
+jinja2>=3.1

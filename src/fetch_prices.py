@@ -15,8 +15,7 @@ PRICES_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "prices.
 universe = pd.read_csv(UNIVERSE_PATH)                             # the handoff from build_universe.py
 tickers = universe["ticker"].tolist()
 
-print(len(tickers))
-print(tickers[:10])
+print(f"{len(tickers)} tickers to download")
 
 # auto_adjust=True corrects prices for splits and dividends. Without it Apple's
 # 2020 4-for-1 split reads as a 75% crash rather than a share count change.
@@ -47,10 +46,11 @@ for i in range(0, len(tickers), CHUNK_SIZE):
 # lines every ticker up against a shared calendar and leaves blanks pre-IPO.
 prices = pd.concat(frames, ignore_index=True)
 prices = prices.dropna(subset=["Close"])                          # ~149k placeholder rows removed
-print(prices.shape)
-print(prices["Ticker"].nunique())
 
+# data/ is not in version control, so the directory may not exist on a fresh clone.
+PRICES_PATH.parent.mkdir(parents=True, exist_ok=True)
 prices.to_parquet(PRICES_PATH, index=False)                       # parquet keeps dtypes and is ~3x smaller than CSV
-print(f"wrote {len(prices):,} rows to {PRICES_PATH}")
+print(f"wrote {len(prices):,} rows for {prices['Ticker'].nunique()} tickers "
+      f"to {PRICES_PATH}")
 
 

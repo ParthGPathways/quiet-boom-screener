@@ -12,10 +12,15 @@
 # Output: data/raw/fundamentals.parquet, one row per company/quarter/metric.
 
 # M1.3 — pull quarterly fundamentals from SEC EDGAR companyfacts
+import os
+
 import requests
 import pandas as pd
 
-HEADERS = {"User-Agent": "p.goel10@lse.ac.uk"}
+# The SEC's fair-access policy asks callers to identify themselves with a contact
+# address, and throttles or blocks requests that do not. Override with:
+#     export SEC_USER_AGENT="your.name@example.com"
+HEADERS = {"User-Agent": os.environ.get("SEC_USER_AGENT", "p.goel10@lse.ac.uk")}
 
 # Which GAAP tags to look for, per metric.
 # Aliases (same concept, renamed over time) -> merged together.
@@ -206,7 +211,8 @@ universe = pd.read_csv(UNIVERSE_PATH)
 # The cache is keyed by CIK only, so it does NOT know about changes to METRICS:
 # after adding or changing a metric, delete this directory to force a full refetch.
 CACHE_DIR = UNIVERSE_PATH.parent / "fundamentals_cache"
-CACHE_DIR.mkdir(exist_ok=True)
+# parents=True: on a fresh clone data/raw/ does not exist either.
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 frames = []
 failures = []

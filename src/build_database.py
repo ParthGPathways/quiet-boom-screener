@@ -52,6 +52,10 @@ CREATE TABLE IF NOT EXISTS fundamentals (
 );
 """
 
+# data/db/ is not in version control, so create it before SQLite tries to open a
+# file inside it.
+DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
 connection = sqlite3.connect(DB_PATH)                                   # creates the file if it does not exist
 connection.executescript(SCHEMA)                                        # executescript runs several statements at once
 connection.commit()
@@ -106,13 +110,39 @@ fundamentals = fundamentals.drop_duplicates(subset=["cik", "period_end", "metric
 
 # Some derived quarters are arithmetic residuals: a restated annual figure minus
 # an un-restated 9-month figure. Drop them rather than store a wrong number.
-NON_NEGATIVE = ["revenue", "capex", "d_and_a"]
+# Metrics that cannot legitimately be negative, and where a value far below the
+# year's own average is an arithmetic residual rather than a real figure. Operating
+# income and net income are excluded because losses are real.
+NON_NEGATIVE = ["revenue", "capex", "d_and_a", "shares_diluted"]
+
+# Stricter still: these cannot be zero either. A quarter with no capex is possible;
+# a company with no shares is not. Zeros here survive the rule above because when
+# every quarter of a year is zero the year average is zero too, and nothing is
+# "below 2% of zero".
+STRICTLY_POSITIVE = ["shares_diluted"]
+
+# Some filers tag share counts in thousands or millions rather than actual shares:
+# McDonald's reports 711 (meaning 711 million), Nutanix 287,481 (meaning 287
+# million). The mis-scaling is persistent per company, so an earlier quarter is no
+# help, and it makes market capitalisation wrong by a factor of 1,000 or 1,000,000.
+#
+# The scale could be guessed - multiply until the number looks sensible - but that
+# invents data. Dropping costs 4 companies out of ~880 and every industry figure
+# here is a median, so the loss is negligible against the risk of a silently wrong
+# market cap.
+#
+# 1,000,000 is comfortably clear of both sides: the mis-scaled values are all under
+# 300,000, while the smallest genuine count in the universe is NVR at 2.8 million
+# (a real company that has never split its stock).
+MIN_SHARES = 1_000_000
 
 year = fundamentals["period_end"].str.slice(0, 4)
 year_avg = fundamentals.groupby(["cik", "metric", year])["val"].transform("mean") # transform keeps one value per row, not per group
 
 is_flow = fundamentals["metric"].isin(NON_NEGATIVE)
-bad = is_flow & ((fundamentals["val"] < 0) | (fundamentals["val"] < year_avg * 0.02)) # negative is impossible; <2% is the residual cliff
+bad = is_flow & ((fundamentals["val"] < 0) | (fundamentals["val"] < year_avg * 0.02))
+bad = bad | (fundamentals["metric"].isin(STRICTLY_POSITIVE) & (fundamentals["val"] <= 0))
+bad = bad | (fundamentals["metric"].eq("shares_diluted") & (fundamentals["val"] < MIN_SHARES)) # negative is impossible; <2% is the residual cliff
 
 bad_quarters = set(zip(
     fundamentals.loc[bad & fundamentals["metric"].eq("revenue"), "cik"],

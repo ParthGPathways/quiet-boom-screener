@@ -4,18 +4,25 @@
 # each company's SEC CIK (the SEC's permanent id for a filer) from the SEC's own
 # ticker->CIK map. Output: data/raw/universe.csv, one row per company.
 
+import os
+
 import pandas as pd
 import requests
 from io import StringIO
 from pathlib import Path
 
 # The SEC's authoritative ticker -> CIK mapping for every company that files with them.
+# The SEC's fair-access policy asks callers to identify themselves with a contact
+# address, and throttles or blocks requests that do not. Override with:
+#     export SEC_USER_AGENT="your.name@example.com"
+SEC_USER_AGENT = os.environ.get("SEC_USER_AGENT", "p.goel10@lse.ac.uk")
+
 CIK_URL = "https://www.sec.gov/files/company_tickers.json"
 
 # Downloads that mapping as a DataFrame with columns cik_str / ticker / title.
 # The SEC's fair-access policy asks callers to identify themselves by email.
 def fetch_cik_map():
-    response = requests.get(CIK_URL, headers={"User-Agent": "p.goel10@lse.ac.uk"})
+    response = requests.get(CIK_URL, headers={"User-Agent": SEC_USER_AGENT})
     response.raise_for_status()                                   # stop here if the SEC refused the request
     return pd.DataFrame(response.json().values())                 # the JSON is keyed by row number; keep only the values
 
@@ -70,5 +77,7 @@ universe = universe.merge(cik_map, on="ticker", how="left")       # left join: k
 assert universe["cik"].isna().sum() == 0, "some tickers have no CIK"
 assert len(universe) == 903, f"expected 903 rows, got {len(universe)}"
 
+# data/ is not in version control, so the directory may not exist on a fresh clone.
+OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 universe.to_csv(OUT_PATH, index=False)                            # index=False: don't write pandas' row numbers as a column
 print(f"wrote {len(universe)} rows to {OUT_PATH}")
