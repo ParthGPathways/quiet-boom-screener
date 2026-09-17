@@ -29,7 +29,10 @@ Each milestone is independently CV-mentionable — the project has value even mi
 - **Concepts:** relational schema design, SQL joins/aggregation/window functions
 
 ### M3 — The screens (Python + SQL)
-- [ ] 3.1 Boom score: growth acceleration, margin expansion, capex cycle by industry
+- [x] 3.1 Boom score: growth acceleration, margin expansion, capex cycle by industry
+  - `src/boom_score.py`; median company (not aggregate), sub-industries with >=5 companies
+  - breadth (>=70% of companies growing) is a gate, not a scored component
+  - rates compared to a long baseline (2017-23), levels to a short one (2021-23)
 - [ ] 3.2 Quiet filter: AI-keyword screen on 10-K business descriptions + correlation vs AI basket
 - [ ] 3.3 Ranked "quiet boom" industry table
 - **Concepts:** feature construction, z-scores/ranking, text screening, return correlation
