@@ -32,10 +32,12 @@ capex up 4–6 points of revenue (the data-centre power build-out), EV/EBITDA of
 
 ![Growth acceleration against EV/EBITDA](docs/scatter.svg)
 
-*Horizontal: revenue growth acceleration, percentage points above the industry's own
-long-run rate. Vertical: EV/EBITDA, inverted so cheaper sits higher. Bubble size is
-company count. Blue moves against the AI trade, grey moves with it. **Top-left is the
-thesis: accelerating and still cheap.***
+*Numbers are league-table ranks. Horizontal: revenue growth acceleration, percentage
+points above the industry's own long-run rate. Vertical: EV/EBITDA, inverted so
+cheaper sits higher. Bubble size is company count. Dashed lines mark the medians, so
+the top-right quadrant is the thesis: growing faster than most, and cheaper than most.*
+
+*7 of 19 industries are absent from the chart because EV/EBITDA does not apply to financials: 1. Insurance Brokers, 2. Property & Casualty Insurance, 5. Asset Management & Custody Banks, 7. Investment Banking & Brokerage, 8. Financial Exchanges & Data, 12. Regional Banks, 15. Life & Health Insurance.*
 
 ### Top 10 of 19 qualifying industries
 

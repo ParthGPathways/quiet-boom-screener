@@ -144,76 +144,117 @@ or inputs are missing.</p>
 # Drawn as inline SVG rather than with a charting library: no network dependency,
 # no build step, and the file opens correctly from disk years from now.
 
-def build_scatter(frame, width=1000, height=460, pad=58):
+def nice_ticks(low, high, target=6):
+    """Round tick positions covering [low, high], roughly `target` of them."""
+    span = high - low
+    if span <= 0:
+        return [low]
+    raw = span / target
+    magnitude = 10 ** int(pd.np.floor(pd.np.log10(raw))) if hasattr(pd, "np") else None
+    import math
+    magnitude = 10 ** math.floor(math.log10(raw))
+    for multiple in (1, 2, 2.5, 5, 10):
+        step = magnitude * multiple
+        if span / step <= target:
+            break
+    first = math.ceil(low / step) * step
+    ticks, value = [], first
+    while value <= high + 1e-9:
+        ticks.append(round(value, 6))
+        value += step
+    return ticks
+
+
+def build_scatter(frame, width=980, height=520, pad_left=70, pad=58):
+    """Scatter of growth acceleration against EV/EBITDA.
+
+    Bubbles are numbered by league-table rank rather than labelled with names: at
+    19 industries the names collide badly, and the table beneath the chart already
+    carries them, so the number is a key into it.
+    """
     points = frame.dropna(subset=["acceleration", "ev_ebitda"]).copy()
     if points.empty:
         return "<p class='note'>No industries have both a growth signal and a multiple.</p>"
+    points["rank"] = [list(frame.index).index(name) + 1 for name in points.index]
 
     x_min, x_max = points["acceleration"].min(), points["acceleration"].max()
     y_min, y_max = points["ev_ebitda"].min(), points["ev_ebitda"].max()
-    x_pad = (x_max - x_min) * 0.08 or 1
-    y_pad = (y_max - y_min) * 0.08 or 1
+    x_pad = (x_max - x_min) * 0.12 or 1
+    y_pad = (y_max - y_min) * 0.12 or 1
     x_min, x_max = x_min - x_pad, x_max + x_pad
     y_min, y_max = y_min - y_pad, y_max + y_pad
 
     def sx(v):
-        return pad + (v - x_min) / (x_max - x_min) * (width - 2 * pad)
+        return pad_left + (v - x_min) / (x_max - x_min) * (width - pad_left - pad)
 
-    def sy(v):  # inverted: cheaper (lower multiple) should sit higher on the page
+    def sy(v):  # inverted: a cheaper multiple sits higher on the page
         return height - pad - (v - y_min) / (y_max - y_min) * (height - 2 * pad)
 
-    parts = [f'<svg viewBox="0 0 {width} {height}" width="100%" '
-             f'role="img" aria-label="Growth acceleration against EV/EBITDA" '
-             f'style="max-width:{width}px">']
-    parts.append(f'<rect x="0" y="0" width="{width}" height="{height}" fill="#fff"/>')
+    out = [f'<svg viewBox="0 0 {width} {height}" width="100%" role="img" '
+           f'aria-label="Growth acceleration against EV/EBITDA by industry" '
+           f'style="max-width:{width}px">',
+           f'<rect width="{width}" height="{height}" fill="#fff"/>']
 
-    # Quadrant divider at zero acceleration and the median multiple.
-    median_multiple = points["ev_ebitda"].median()
-    parts.append(f'<line x1="{sx(0):.1f}" y1="{pad}" x2="{sx(0):.1f}" y2="{height-pad}" '
-                 f'stroke="#d1d5db" stroke-dasharray="4 4"/>')
-    parts.append(f'<line x1="{pad}" y1="{sy(median_multiple):.1f}" x2="{width-pad}" '
-                 f'y2="{sy(median_multiple):.1f}" stroke="#d1d5db" stroke-dasharray="4 4"/>')
+    # Dividers at the MEDIAN of each axis. A line at zero acceleration would sit off
+    # the chart entirely, because every industry here is already gated to positive.
+    mid_x = points["acceleration"].median()
+    mid_y = points["ev_ebitda"].median()
+    out.append(f'<line x1="{sx(mid_x):.1f}" y1="{pad}" x2="{sx(mid_x):.1f}" '
+               f'y2="{height-pad}" stroke="#d1d5db" stroke-dasharray="4 4"/>')
+    out.append(f'<line x1="{pad_left}" y1="{sy(mid_y):.1f}" x2="{width-pad}" '
+               f'y2="{sy(mid_y):.1f}" stroke="#d1d5db" stroke-dasharray="4 4"/>')
+    out.append(f'<text x="{pad_left+8}" y="{pad+14}" font-size="11" fill="#9ca3af">'
+               f'cheaper &amp; faster growing</text>')
 
-    parts.append(f'<line x1="{pad}" y1="{height-pad}" x2="{width-pad}" y2="{height-pad}" stroke="#16181d"/>')
-    parts.append(f'<line x1="{pad}" y1="{pad}" x2="{pad}" y2="{height-pad}" stroke="#16181d"/>')
+    for tick in nice_ticks(x_min, x_max):
+        out.append(f'<line x1="{sx(tick):.1f}" y1="{height-pad}" x2="{sx(tick):.1f}" '
+                   f'y2="{height-pad+5}" stroke="#9ca3af"/>')
+        out.append(f'<text x="{sx(tick):.1f}" y="{height-pad+19}" font-size="11" '
+                   f'fill="#6b7280" text-anchor="middle">{tick:+g}</text>')
+    for tick in nice_ticks(y_min, y_max):
+        out.append(f'<line x1="{pad_left-5}" y1="{sy(tick):.1f}" x2="{pad_left}" '
+                   f'y2="{sy(tick):.1f}" stroke="#9ca3af"/>')
+        out.append(f'<text x="{pad_left-10}" y="{sy(tick)+4:.1f}" font-size="11" '
+                   f'fill="#6b7280" text-anchor="end">{tick:g}x</text>')
 
-    for tick in range(int(x_min) - 1, int(x_max) + 2, 2):
-        if x_min <= tick <= x_max:
-            parts.append(f'<text x="{sx(tick):.1f}" y="{height-pad+18}" font-size="11" '
-                         f'fill="#6b7280" text-anchor="middle">{tick:+d}</text>')
-    for tick in range(0, int(y_max) + 6, 5):
-        if y_min <= tick <= y_max:
-            parts.append(f'<text x="{pad-10}" y="{sy(tick)+4:.1f}" font-size="11" '
-                         f'fill="#6b7280" text-anchor="end">{tick}x</text>')
-
-    parts.append(f'<text x="{width/2:.0f}" y="{height-12}" font-size="12" fill="#6b7280" '
-                 f'text-anchor="middle">growth acceleration (percentage points)</text>')
-    parts.append(f'<text transform="translate(16,{height/2:.0f}) rotate(-90)" font-size="12" '
-                 f'fill="#6b7280" text-anchor="middle">EV / EBITDA (cheaper is higher)</text>')
+    out.append(f'<line x1="{pad_left}" y1="{height-pad}" x2="{width-pad}" '
+               f'y2="{height-pad}" stroke="#16181d"/>')
+    out.append(f'<line x1="{pad_left}" y1="{pad}" x2="{pad_left}" y2="{height-pad}" '
+               f'stroke="#16181d"/>')
+    out.append(f'<text x="{(pad_left+width-pad)/2:.0f}" y="{height-14}" font-size="12" '
+               f'fill="#6b7280" text-anchor="middle">growth acceleration '
+               f'(percentage points above the industry\'s own long-run rate)</text>')
+    out.append(f'<text transform="translate(18,{height/2:.0f}) rotate(-90)" font-size="12" '
+               f'fill="#6b7280" text-anchor="middle">EV / EBITDA '
+               f'(cheaper is higher)</text>')
 
     biggest = points["companies"].max()
-    for name, row in points.iterrows():
-        radius = 5 + 11 * (row["companies"] / biggest) ** 0.5
+    for name, row in points.sort_values("companies", ascending=False).iterrows():
+        radius = max(11, 9 + 12 * (row["companies"] / biggest) ** 0.5)
         quiet = pd.notna(row["ai_correlation"]) and row["ai_correlation"] < 0
-        fill = "#1d4ed8" if quiet else "#9ca3af"
-        parts.append(
-            f'<circle cx="{sx(row["acceleration"]):.1f}" cy="{sy(row["ev_ebitda"]):.1f}" '
-            f'r="{radius:.1f}" fill="{fill}" fill-opacity="0.55" stroke="{fill}">'
-            f'<title>{name}\nacceleration {row["acceleration"]:+.1f} pts\n'
+        fill, edge = ("#1d4ed8", "#1e40af") if quiet else ("#9ca3af", "#6b7280")
+        cx, cy = sx(row["acceleration"]), sy(row["ev_ebitda"])
+        out.append(
+            f'<g><circle cx="{cx:.1f}" cy="{cy:.1f}" r="{radius:.1f}" fill="{fill}" '
+            f'fill-opacity="0.55" stroke="{edge}"/>'
+            f'<text x="{cx:.1f}" y="{cy+4:.1f}" font-size="11.5" font-weight="600" '
+            f'fill="#111827" text-anchor="middle">{int(row["rank"])}</text>'
+            f'<title>{int(row["rank"])}. {name}\n'
+            f'acceleration {row["acceleration"]:+.1f} pts\n'
             f'EV/EBITDA {row["ev_ebitda"]:.1f}x\n'
             f'AI correlation {row["ai_correlation"]:+.2f}\n'
-            f'{int(row["companies"])} companies</title></circle>'
+            f'{int(row["companies"])} companies</title></g>'
         )
-        # Label only the larger industries, or the chart becomes unreadable.
-        if row["companies"] >= 9:
-            parts.append(
-                f'<text x="{sx(row["acceleration"]):.1f}" '
-                f'y="{sy(row["ev_ebitda"]) - radius - 5:.1f}" font-size="10.5" '
-                f'fill="#374151" text-anchor="middle">{name[:28]}</text>'
-            )
 
-    parts.append("</svg>")
-    return "".join(parts)
+    # Legend for the colour, which is otherwise unexplained inside the image.
+    out.append(f'<g transform="translate({width-pad-215},{pad-14})">'
+               f'<circle cx="8" cy="0" r="7" fill="#1d4ed8" fill-opacity="0.55" stroke="#1e40af"/>'
+               f'<text x="22" y="4" font-size="11.5" fill="#374151">moves against the AI trade</text>'
+               f'<circle cx="8" cy="20" r="7" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/>'
+               f'<text x="22" y="24" font-size="11.5" fill="#374151">moves with it</text></g>')
+
+    out.append("</svg>")
+    return "".join(out)
 
 
 # --- render ---------------------------------------------------------------------
@@ -317,15 +358,27 @@ loud = ", ".join(
     f'{name} ({row["ai_correlation"]:+.2f})' for name, row in bottom.iterrows()
 )
 
+plotted = table.dropna(subset=["acceleration", "ev_ebitda"])
+absent = [
+    f"{list(table.index).index(name) + 1}. {name}"
+    for name in table.index if name not in plotted.index
+]
+missing_note = (
+    f"{len(absent)} of {len(table)} industries are absent from the chart because "
+    f"EV/EBITDA does not apply to financials: " + ", ".join(absent) + "."
+) if absent else "All qualifying industries are plotted."
+
 results_block = f"""{START_MARKER}
 <!-- Generated by src/build_site.py - edits here are overwritten on rebuild. -->
 
 ![Growth acceleration against EV/EBITDA](docs/scatter.svg)
 
-*Horizontal: revenue growth acceleration, percentage points above the industry's own
-long-run rate. Vertical: EV/EBITDA, inverted so cheaper sits higher. Bubble size is
-company count. Blue moves against the AI trade, grey moves with it. **Top-left is the
-thesis: accelerating and still cheap.***
+*Numbers are league-table ranks. Horizontal: revenue growth acceleration, percentage
+points above the industry's own long-run rate. Vertical: EV/EBITDA, inverted so
+cheaper sits higher. Bubble size is company count. Dashed lines mark the medians, so
+the top-right quadrant is the thesis: growing faster than most, and cheaper than most.*
+
+*{missing_note}*
 
 ### Top {min(10, len(table))} of {len(table)} qualifying industries
 
