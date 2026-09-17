@@ -50,6 +50,8 @@ companies["revenue_bn"] = (companies["revenue"] / 1e9).round(1)
 # Kept inline rather than in separate files: the site is two templates, and one
 # self-contained script is easier to hand to someone than a directory of fragments.
 
+# One stylesheet shared by both page types, inlined into each file so the site is
+# a set of self-contained documents with no assets to lose.
 STYLE = """
 :root { --ink:#16181d; --muted:#6b7280; --line:#e5e7eb; --bg:#ffffff;
         --good:#0f766e; --bad:#b91c1c; --accent:#1d4ed8; }
@@ -86,9 +88,12 @@ def signed(value, digits=2):
 
 
 def plain(value, digits=1):
+    """Render a number, or an em-dash where the measure does not apply."""
     return "<td>&mdash;</td>" if pd.isna(value) else f"<td>{value:.{digits}f}</td>"
 
 
+# Jinja renders these with autoescape off, because every value passed in is either
+# a number formatted by the helpers above or HTML this script built itself.
 INDEX_TEMPLATE = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -186,9 +191,16 @@ def build_scatter(frame, width=980, height=520, pad_left=70, pad=58):
     y_min, y_max = y_min - y_pad, y_max + y_pad
 
     def sx(v):
+        """Data value -> horizontal pixel position."""
         return pad_left + (v - x_min) / (x_max - x_min) * (width - pad_left - pad)
 
-    def sy(v):  # inverted: a cheaper multiple sits higher on the page
+    def sy(v):
+        """Data value -> vertical pixel position, inverted.
+
+        SVG measures y downwards from the top, and a LOW multiple means cheap,
+        so both inversions cancel: a cheaper industry ends up higher on the page,
+        which is what a reader expects of "better".
+        """
         return height - pad - (v - y_min) / (y_max - y_min) * (height - 2 * pad)
 
     out = [f'<svg viewBox="0 0 {width} {height}" width="100%" role="img" '
@@ -264,6 +276,7 @@ environment = Environment(autoescape=False)
 SITE_DIR.mkdir(exist_ok=True)
 INDUSTRY_DIR.mkdir(exist_ok=True)
 
+# The league table. Each row links to that industry's own page.
 index_rows = []
 for name, row in table.iterrows():
     index_rows.append(
@@ -289,6 +302,8 @@ for name, row in table.iterrows():
     )
 )
 
+# One page per qualifying industry, listing the companies behind its numbers so a
+# reader can check the industry figure against its members.
 for name, row in table.iterrows():
     members = companies[companies["sub_industry"] == name].sort_values(
         "market_cap_bn", ascending=False
@@ -335,6 +350,7 @@ DOCS_DIR.mkdir(exist_ok=True)
 
 
 def markdown_cell(value, digits=2, sign=False):
+    """Same as plain() but for the README table, where missing reads as an em-dash."""
     if pd.isna(value):
         return "—"
     return f"{value:+.{digits}f}" if sign else f"{value:.{digits}f}"

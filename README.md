@@ -149,6 +149,8 @@ of specific failures found along the way:
 
 - The AI screen uses market correlation only; a keyword screen on 10-K business
   descriptions would be an independent second check.
+- The AI basket's members are themselves in the universe, so their industries are
+  slightly self-correlated. Measured at -0.004 to -0.064, which changes no ordering.
 - EV/EBITDA is not meaningful for banks and insurers; those rest on the DCF alone.
 - The DCF is deliberately simple and favours low-beta defensives, which receive a
   lower discount rate.

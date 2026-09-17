@@ -16,6 +16,13 @@
 # with the AI basket's raw return, because almost everything correlates with the
 # market. The difference isolates the part that is specifically the AI trade.
 #
+# Known bias: the basket's own members sit inside the universe, so their industries
+# are partly correlated with themselves. Measured, it shifts those industries by
+# -0.004 to -0.064 (Semiconductors 0.475 -> 0.452 with its five basket members
+# excluded) and changes no ordering, so the members are left in rather than carving
+# out a special case. It is a bias against the loud end, and the loud end is what
+# the screen rejects anyway.
+#
 # Reads data/db/screener.db. Prints industries ranked from quietest to loudest.
 
 import sqlite3
