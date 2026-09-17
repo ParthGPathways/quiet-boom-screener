@@ -23,6 +23,7 @@ from jinja2 import Environment
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import boom_score
 import dcf
 import verdict
 
@@ -358,6 +359,37 @@ loud = ", ".join(
     f'{name} ({row["ai_correlation"]:+.2f})' for name, row in bottom.iterrows()
 )
 
+# --- the funnel ----------------------------------------------------------------
+# "Top 10 of 19 qualifying industries" does not tell a reader that 127 industries
+# and several hundred companies were filtered out on the way. Counted here from the
+# data rather than written down, so the figures cannot drift from the code.
+
+_connection = __import__("sqlite3").connect(boom_score.DB_PATH)
+_universe = pd.read_sql_query("SELECT cik, sub_industry FROM companies", _connection)
+_tickers = pd.read_sql_query("SELECT COUNT(*) AS n FROM companies", _connection)["n"][0]
+_connection.close()
+
+_recent = boom_score.facts[
+    boom_score.facts["year"].between(boom_score.RECENT_FROM, boom_score.RECENT_TO)
+]
+_measurable = _recent.dropna(subset=["growth"])
+_big_enough = (_measurable.groupby("sub_industry")["cik"].nunique() >= boom_score.MIN_COMPANIES).sum()
+
+_qualifying = set(table.index)
+_rejected = _universe[~_universe["sub_industry"].isin(_qualifying)]
+
+funnel_rows = [
+    ("Tickers in the universe (S&P 500 + 400)", _tickers),
+    ("Distinct filers (dual-class tickers share one CIK)", _universe["cik"].nunique()),
+    ("Sub-industries", _universe["sub_industry"].nunique()),
+    (f"... with at least {boom_score.MIN_COMPANIES} companies that have a usable growth figure", int(_big_enough)),
+    (f"... and at least {boom_score.MIN_BREADTH:.0%} of those companies growing", len(boom_score.scores)),
+    ("... and accelerating, with a price correlation available", len(table)),
+]
+funnel_md = "\n".join(
+    f"| {label} | {value} |" for label, value in funnel_rows
+)
+
 plotted = table.dropna(subset=["acceleration", "ev_ebitda"])
 absent = [
     f"{list(table.index).index(name) + 1}. {name}"
@@ -379,6 +411,17 @@ cheaper sits higher. Bubble size is company count. Dashed lines mark the medians
 the top-right quadrant is the thesis: growing faster than most, and cheaper than most.*
 
 *{missing_note}*
+
+### How {len(table)} industries were selected
+
+| stage | count |
+|---|---|
+{funnel_md}
+
+{_universe["sub_industry"].nunique() - len(table)} sub-industries were rejected, holding
+{_rejected["cik"].nunique()} companies. The screen is a filter, not a description of
+the whole market: an industry has to be large enough to generalise from, broadly
+growing rather than carried by one name, and accelerating against its own history.
 
 ### Top {min(10, len(table))} of {len(table)} qualifying industries
 

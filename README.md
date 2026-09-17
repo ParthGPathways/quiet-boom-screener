@@ -39,6 +39,22 @@ the top-right quadrant is the thesis: growing faster than most, and cheaper than
 
 *7 of 19 industries are absent from the chart because EV/EBITDA does not apply to financials: 1. Insurance Brokers, 2. Property & Casualty Insurance, 5. Asset Management & Custody Banks, 7. Investment Banking & Brokerage, 8. Financial Exchanges & Data, 12. Regional Banks, 15. Life & Health Insurance.*
 
+### How 19 industries were selected
+
+| stage | count |
+|---|---|
+| Tickers in the universe (S&P 500 + 400) | 903 |
+| Distinct filers (dual-class tickers share one CIK) | 900 |
+| Sub-industries | 146 |
+| ... with at least 5 companies that have a usable growth figure | 60 |
+| ... and at least 70% of those companies growing | 46 |
+| ... and accelerating, with a price correlation available | 19 |
+
+127 sub-industries were rejected, holding
+653 companies. The screen is a filter, not a description of
+the whole market: an industry has to be large enough to generalise from, broadly
+growing rather than carried by one name, and accelerating against its own history.
+
 ### Top 10 of 19 qualifying industries
 
 | # | Industry | n | Verdict | Accel | AI corr | EV/EBITDA | Breadth |
