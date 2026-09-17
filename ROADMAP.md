@@ -54,9 +54,12 @@ Each milestone is independently CV-mentionable — the project has value even mi
 - **Concepts:** enterprise value, multiples, DCF mechanics, WACC
 
 ### M5 — HTML dashboard
-- [ ] 5.1 Industry league table + growth-vs-valuation "quiet boom quadrant" scatter
-- [ ] 5.2 Per-industry drill-down pages with charts
-- [ ] 5.3 One-command rebuild: data refresh → site regenerates
+- [x] 5.1 Industry league table + growth-vs-valuation scatter (`src/build_site.py`)
+  - scatter is inline SVG: no CDN, no build step, opens from disk forever
+- [x] 5.2 Per-industry drill-down pages (`site/industry/<slug>.html`)
+  - one page per qualifying industry, listing member companies with EV/EBITDA, DCF upside, beta, WACC
+- [x] 5.3 One-command rebuild (`src/rebuild.py`)
+  - default regenerates the site (~4s); `--data` reloads the DB; `--fetch` re-downloads everything
 - **Concepts:** HTML/CSS basics, templating (Jinja2), charts
 
 ---

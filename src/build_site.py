@@ -1,0 +1,278 @@
+# M5 - generate the HTML dashboard from the finished screens.
+#
+# Renders three things into site/:
+#
+#   index.html            the industry league table, plus a growth-vs-valuation
+#                         scatter whose quadrants are the whole thesis: top-left is
+#                         accelerating and cheap, bottom-right is expensive and not
+#                         growing
+#   industry/<slug>.html  one page per industry, listing its companies with the
+#                         figures behind the industry-level numbers
+#
+# Importing verdict.py re-runs the entire pipeline (boom score, quiet filter,
+# valuation, DCF), so this single script regenerates the site from the database.
+#
+# Reads data/db/screener.db via verdict.py. Writes site/.
+
+import re
+import sys
+from pathlib import Path
+
+import pandas as pd
+from jinja2 import Environment
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import dcf
+import verdict
+
+SITE_DIR = Path(__file__).resolve().parent.parent / "site"
+INDUSTRY_DIR = SITE_DIR / "industry"
+
+
+def slugify(name):
+    """Turn an industry name into a safe filename: 'Gas Utilities' -> gas-utilities."""
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+
+table = verdict.combined.copy()
+table["slug"] = [slugify(name) for name in table.index]
+
+# Companies behind each industry, for the drill-down pages.
+companies = dcf.dcf.copy()
+companies["ev_ebitda"] = companies["ev_ebitda"].round(1)
+companies["upside"] = companies["upside"].round(2)
+companies["market_cap_bn"] = (companies["market_cap"] / 1e9).round(1)
+companies["revenue_bn"] = (companies["revenue"] / 1e9).round(1)
+
+# --- templates ------------------------------------------------------------------
+# Kept inline rather than in separate files: the site is two templates, and one
+# self-contained script is easier to hand to someone than a directory of fragments.
+
+STYLE = """
+:root { --ink:#16181d; --muted:#6b7280; --line:#e5e7eb; --bg:#ffffff;
+        --good:#0f766e; --bad:#b91c1c; --accent:#1d4ed8; }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink);
+       font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+.wrap { max-width:1100px; margin:0 auto; padding:40px 24px 80px; }
+h1 { font-size:28px; margin:0 0 6px; letter-spacing:-0.02em; }
+h2 { font-size:19px; margin:44px 0 12px; letter-spacing:-0.01em; }
+.sub { color:var(--muted); margin:0 0 28px; }
+table { border-collapse:collapse; width:100%; font-size:14px; }
+th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:right;
+         white-space:nowrap; }
+th:first-child, td:first-child { text-align:left; white-space:normal; }
+th { font-weight:600; color:var(--muted); font-size:12px; text-transform:uppercase;
+     letter-spacing:0.04em; border-bottom:1.5px solid var(--ink); }
+tbody tr:hover { background:#f9fafb; }
+.pos { color:var(--good); } .neg { color:var(--bad); }
+a { color:var(--accent); text-decoration:none; }
+a:hover { text-decoration:underline; }
+.scroll { overflow-x:auto; }
+.note { color:var(--muted); font-size:13px; margin-top:10px; }
+.back { display:inline-block; margin-bottom:18px; font-size:14px; }
+figure { margin:0; }
+"""
+
+
+def signed(value, digits=2):
+    """Render a number with a class so positive and negative read differently."""
+    if pd.isna(value):
+        return '<td class="muted">&mdash;</td>'
+    cls = "pos" if value > 0 else "neg" if value < 0 else ""
+    return f'<td class="{cls}">{value:+.{digits}f}</td>'
+
+
+def plain(value, digits=1):
+    return "<td>&mdash;</td>" if pd.isna(value) else f"<td>{value:.{digits}f}</td>"
+
+
+INDEX_TEMPLATE = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Quiet Boom Screener</title><style>{{ style }}</style></head>
+<body><div class="wrap">
+<h1>Quiet Boom Screener</h1>
+<p class="sub">US industries growing faster than they normally do, without an AI
+narrative attached &mdash; and whether the market has noticed.
+{{ n_industries }} industries from {{ n_companies }} S&amp;P 500 and 400 companies.</p>
+
+<h2>Growth vs valuation</h2>
+<figure>{{ scatter }}</figure>
+<p class="note">Horizontal: revenue growth acceleration, in percentage points above
+the industry's own long-run rate. Vertical: EV/EBITDA. Bubble size is company count.
+Blue = moves against the AI trade, grey = moves with it. The top-left quadrant is
+the thesis: accelerating and still cheap.</p>
+
+<h2>League table</h2>
+<div class="scroll"><table>
+<thead><tr>
+<th>Industry</th><th>n</th><th>Verdict</th><th>Quiet boom</th><th>Accel</th>
+<th>AI corr</th><th>EV/EBITDA</th><th>DCF</th><th>Breadth</th>
+</tr></thead>
+<tbody>{{ rows }}</tbody>
+</table></div>
+<p class="note">Verdict combines the growth signal with cheapness. Accel is
+percentage points of revenue growth above the industry's long-run rate. AI corr is
+correlation with an AI basket after market movement is removed &mdash; lower is
+quieter. EV/EBITDA is blank for financials, where it does not apply.</p>
+</div></body></html>"""
+
+INDUSTRY_TEMPLATE = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ name }} &mdash; Quiet Boom Screener</title><style>{{ style }}</style></head>
+<body><div class="wrap">
+<a class="back" href="../index.html">&larr; All industries</a>
+<h1>{{ name }}</h1>
+<p class="sub">{{ n }} companies &middot; verdict {{ verdict }} &middot;
+acceleration {{ accel }} pts &middot; AI correlation {{ ai_corr }}</p>
+<h2>Companies</h2>
+<div class="scroll"><table>
+<thead><tr><th>Company</th><th>Ticker</th><th>Mkt cap $bn</th><th>Revenue $bn</th>
+<th>EV/EBITDA</th><th>DCF upside</th><th>Beta</th><th>WACC</th></tr></thead>
+<tbody>{{ rows }}</tbody>
+</table></div>
+<p class="note">DCF upside above 1.00 means the discounted cash flows imply a higher
+enterprise value than the market is paying. Blank where free cash flow is negative
+or inputs are missing.</p>
+</div></body></html>"""
+
+
+# --- scatter --------------------------------------------------------------------
+# Drawn as inline SVG rather than with a charting library: no network dependency,
+# no build step, and the file opens correctly from disk years from now.
+
+def build_scatter(frame, width=1000, height=460, pad=58):
+    points = frame.dropna(subset=["acceleration", "ev_ebitda"]).copy()
+    if points.empty:
+        return "<p class='note'>No industries have both a growth signal and a multiple.</p>"
+
+    x_min, x_max = points["acceleration"].min(), points["acceleration"].max()
+    y_min, y_max = points["ev_ebitda"].min(), points["ev_ebitda"].max()
+    x_pad = (x_max - x_min) * 0.08 or 1
+    y_pad = (y_max - y_min) * 0.08 or 1
+    x_min, x_max = x_min - x_pad, x_max + x_pad
+    y_min, y_max = y_min - y_pad, y_max + y_pad
+
+    def sx(v):
+        return pad + (v - x_min) / (x_max - x_min) * (width - 2 * pad)
+
+    def sy(v):  # inverted: cheaper (lower multiple) should sit higher on the page
+        return height - pad - (v - y_min) / (y_max - y_min) * (height - 2 * pad)
+
+    parts = [f'<svg viewBox="0 0 {width} {height}" width="100%" '
+             f'role="img" aria-label="Growth acceleration against EV/EBITDA" '
+             f'style="max-width:{width}px">']
+    parts.append(f'<rect x="0" y="0" width="{width}" height="{height}" fill="#fff"/>')
+
+    # Quadrant divider at zero acceleration and the median multiple.
+    median_multiple = points["ev_ebitda"].median()
+    parts.append(f'<line x1="{sx(0):.1f}" y1="{pad}" x2="{sx(0):.1f}" y2="{height-pad}" '
+                 f'stroke="#d1d5db" stroke-dasharray="4 4"/>')
+    parts.append(f'<line x1="{pad}" y1="{sy(median_multiple):.1f}" x2="{width-pad}" '
+                 f'y2="{sy(median_multiple):.1f}" stroke="#d1d5db" stroke-dasharray="4 4"/>')
+
+    parts.append(f'<line x1="{pad}" y1="{height-pad}" x2="{width-pad}" y2="{height-pad}" stroke="#16181d"/>')
+    parts.append(f'<line x1="{pad}" y1="{pad}" x2="{pad}" y2="{height-pad}" stroke="#16181d"/>')
+
+    for tick in range(int(x_min) - 1, int(x_max) + 2, 2):
+        if x_min <= tick <= x_max:
+            parts.append(f'<text x="{sx(tick):.1f}" y="{height-pad+18}" font-size="11" '
+                         f'fill="#6b7280" text-anchor="middle">{tick:+d}</text>')
+    for tick in range(0, int(y_max) + 6, 5):
+        if y_min <= tick <= y_max:
+            parts.append(f'<text x="{pad-10}" y="{sy(tick)+4:.1f}" font-size="11" '
+                         f'fill="#6b7280" text-anchor="end">{tick}x</text>')
+
+    parts.append(f'<text x="{width/2:.0f}" y="{height-12}" font-size="12" fill="#6b7280" '
+                 f'text-anchor="middle">growth acceleration (percentage points)</text>')
+    parts.append(f'<text transform="translate(16,{height/2:.0f}) rotate(-90)" font-size="12" '
+                 f'fill="#6b7280" text-anchor="middle">EV / EBITDA (cheaper is higher)</text>')
+
+    biggest = points["companies"].max()
+    for name, row in points.iterrows():
+        radius = 5 + 11 * (row["companies"] / biggest) ** 0.5
+        quiet = pd.notna(row["ai_correlation"]) and row["ai_correlation"] < 0
+        fill = "#1d4ed8" if quiet else "#9ca3af"
+        parts.append(
+            f'<circle cx="{sx(row["acceleration"]):.1f}" cy="{sy(row["ev_ebitda"]):.1f}" '
+            f'r="{radius:.1f}" fill="{fill}" fill-opacity="0.55" stroke="{fill}">'
+            f'<title>{name}\nacceleration {row["acceleration"]:+.1f} pts\n'
+            f'EV/EBITDA {row["ev_ebitda"]:.1f}x\n'
+            f'AI correlation {row["ai_correlation"]:+.2f}\n'
+            f'{int(row["companies"])} companies</title></circle>'
+        )
+        # Label only the larger industries, or the chart becomes unreadable.
+        if row["companies"] >= 9:
+            parts.append(
+                f'<text x="{sx(row["acceleration"]):.1f}" '
+                f'y="{sy(row["ev_ebitda"]) - radius - 5:.1f}" font-size="10.5" '
+                f'fill="#374151" text-anchor="middle">{name[:28]}</text>'
+            )
+
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+# --- render ---------------------------------------------------------------------
+
+environment = Environment(autoescape=False)
+SITE_DIR.mkdir(exist_ok=True)
+INDUSTRY_DIR.mkdir(exist_ok=True)
+
+index_rows = []
+for name, row in table.iterrows():
+    index_rows.append(
+        f'<tr><td><a href="industry/{row["slug"]}.html">{name}</a></td>'
+        f'<td>{int(row["companies"])}</td>'
+        + signed(row["verdict_score"])
+        + signed(row["quiet_boom"])
+        + signed(row["acceleration"], 1)
+        + signed(row["ai_correlation"])
+        + plain(row["ev_ebitda"])
+        + plain(row["dcf_upside"], 2)
+        + plain(row["breadth"], 2)
+        + "</tr>"
+    )
+
+(SITE_DIR / "index.html").write_text(
+    environment.from_string(INDEX_TEMPLATE).render(
+        style=STYLE,
+        scatter=build_scatter(table),
+        rows="".join(index_rows),
+        n_industries=len(table),
+        n_companies=len(dcf.dcf),
+    )
+)
+
+for name, row in table.iterrows():
+    members = companies[companies["sub_industry"] == name].sort_values(
+        "market_cap_bn", ascending=False
+    )
+    company_rows = []
+    for _, member in members.iterrows():
+        company_rows.append(
+            f'<tr><td>{member["name"]}</td><td>{member["ticker"]}</td>'
+            + plain(member["market_cap_bn"])
+            + plain(member["revenue_bn"])
+            + plain(member["ev_ebitda"])
+            + plain(member["upside"], 2)
+            + plain(member["beta"], 2)
+            + plain(member["wacc"] * 100, 1)
+            + "</tr>"
+        )
+    (INDUSTRY_DIR / f"{row['slug']}.html").write_text(
+        environment.from_string(INDUSTRY_TEMPLATE).render(
+            style=STYLE,
+            name=name,
+            n=int(row["companies"]),
+            verdict=f'{row["verdict_score"]:+.2f}',
+            accel=f'{row["acceleration"]:+.1f}',
+            ai_corr=f'{row["ai_correlation"]:+.2f}',
+            rows="".join(company_rows),
+        )
+    )
+
+print(f"wrote {SITE_DIR/'index.html'} and {len(table)} industry pages")
