@@ -42,9 +42,15 @@ Each milestone is independently CV-mentionable — the project has value even mi
 - **Concepts:** feature construction, z-scores/ranking, text screening, return correlation
 
 ### M4 — Valuation models (finance core)
-- [ ] 4.1 Comps: EV/EBITDA, P/E vs growth within surviving industries
-- [ ] 4.2 Simplified DCF per company (FCF projection, WACC, terminal value)
-- [ ] 4.3 Cheap-vs-growth verdict per industry
+- [x] 4.1 Comps: EV/EBITDA, P/E vs growth (`src/valuation.py`)
+  - EV = market cap + debt - cash; TTM flows, latest balance-sheet stocks
+  - EV/EBITDA is meaningless for banks/insurers (debt is inventory, not financing)
+- [x] 4.2 Simplified DCF per company (`src/dcf.py`)
+  - unlevered FCF, 5-year fade to 2.5% terminal, WACC from CAPM with beta measured
+    from this project's own price data; biased towards low-beta defensives
+- [x] 4.3 Cheap-vs-growth verdict per industry (`src/verdict.py`)
+  - verdict = quiet_boom + z(value), value averaging inverted EV/EBITDA and DCF upside
+  - utilities are the only top candidates with evidence on BOTH growth and price
 - **Concepts:** enterprise value, multiples, DCF mechanics, WACC
 
 ### M5 — HTML dashboard

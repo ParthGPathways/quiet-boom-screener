@@ -46,6 +46,25 @@ DEBT_TAGS = [
     "LongTermDebtNoncurrent",
 ]
 
+# Diluted rather than basic: valuation should assume options and convertibles are
+# exercised. Reported in the "shares" unit, not USD, and as a weighted average over
+# a period - so it must never be differenced the way cash flow items are.
+SHARES_TAGS = [
+    "WeightedAverageNumberOfDilutedSharesOutstanding",
+]
+
+CASH_TAGS = [
+    "CashAndCashEquivalentsAtCarryingValue",
+    "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents",
+]
+
+# Profit after interest and tax, which is what P/E is built on. Operating income
+# (collected above) sits higher up the income statement and drives EV/EBITDA instead.
+NET_INCOME_TAGS = [
+    "NetIncomeLoss",
+    "ProfitLoss",
+]
+
 
 # EDGAR requires the CIK zero-padded to 10 digits: CIK0000320193, not CIK320193.
 # timeout=30 matters - without it a stalled connection hangs the run forever, and
@@ -58,11 +77,11 @@ def fetch_company_facts(cik):
 
 
 # Income statement items: the discrete quarter is reported directly.
-def extract_quarterly(us_gaap, tags):
+def extract_quarterly(us_gaap, tags, unit="USD"):
     records = []
     for tag in tags:
         if tag in us_gaap:
-            records.extend(us_gaap[tag]["units"]["USD"])              # extend, not append: merge every alias tag
+            records.extend(us_gaap[tag]["units"].get(unit, []))              # extend, not append: merge every alias tag
 
     if not records:
         return None
@@ -80,11 +99,11 @@ def extract_quarterly(us_gaap, tags):
 
 
 # Cash flow items: reported year-to-date, so difference consecutive periods.
-def extract_ytd_quarterly(us_gaap, tags):
+def extract_ytd_quarterly(us_gaap, tags, unit="USD"):
     records = []
     for tag in tags:
         if tag in us_gaap:
-            records.extend(us_gaap[tag]["units"]["USD"])              # extend, not append: merge every alias tag
+            records.extend(us_gaap[tag]["units"].get(unit, []))              # extend, not append: merge every alias tag
 
     if not records:
         return None
@@ -115,12 +134,13 @@ def extract_ytd_quarterly(us_gaap, tags):
 
 
 # Balance sheet items: a snapshot on one date, no period to filter.
-def extract_instant(us_gaap, tags):
+def extract_instant(us_gaap, tags, unit="USD"):
     records = None
     for tag in tags:
         if tag in us_gaap:
-            records = us_gaap[tag]["units"]["USD"]
-            break                                                     # first match wins: these tags measure different things
+            records = us_gaap[tag]["units"].get(unit)
+            if records:
+                break                                                     # first match wins: these tags measure different things
 
     if records is None:
         return None
@@ -134,11 +154,17 @@ def extract_instant(us_gaap, tags):
 # Which extraction rule each metric uses. Storing the function itself (no brackets)
 # makes the choice data rather than code - switching a metric is a one-word edit.
 METRICS = [
-    ("revenue",          REVENUE_TAGS,          extract_ytd_quarterly),
-    ("operating_income", OPERATING_INCOME_TAGS, extract_ytd_quarterly),
-    ("d_and_a",          DA_TAGS,               extract_ytd_quarterly),
-    ("capex",            CAPEX_TAGS,            extract_ytd_quarterly),
-    ("debt",             DEBT_TAGS,             extract_instant),
+    ("revenue",          REVENUE_TAGS,          extract_ytd_quarterly, "USD"),
+    ("operating_income", OPERATING_INCOME_TAGS, extract_ytd_quarterly, "USD"),
+    ("d_and_a",          DA_TAGS,               extract_ytd_quarterly, "USD"),
+    ("capex",            CAPEX_TAGS,            extract_ytd_quarterly, "USD"),
+    ("net_income",       NET_INCOME_TAGS,       extract_ytd_quarterly, "USD"),
+    ("debt",             DEBT_TAGS,             extract_instant,       "USD"),
+    # Share counts are a level, so extract_quarterly (which takes the reported
+    # figure) rather than extract_ytd_quarterly (which would subtract one quarter's
+    # share count from another's and produce nonsense).
+    ("shares_diluted",   SHARES_TAGS,           extract_quarterly,     "shares"),
+    ("cash",             CASH_TAGS,             extract_instant,       "USD"),
 ]
 
 
@@ -149,8 +175,8 @@ def build_company_frame(cik):
     us_gaap = facts.get("facts", {}).get("us-gaap", {})
 
     frames = []
-    for name, tags, extractor in METRICS:
-        df = extractor(us_gaap, tags)
+    for name, tags, extractor, unit in METRICS:
+        df = extractor(us_gaap, tags, unit)
         if df is None or df.empty:                                    # company doesn't use any of these tags
             continue
         df = df.copy()
@@ -173,15 +199,30 @@ UNIVERSE_PATH = Path(__file__).resolve().parent.parent / "data" / "raw" / "unive
 # filing costs one company rather than the entire 13-minute run.
 universe = pd.read_csv(UNIVERSE_PATH)
 
+# Each company's result is written to its own small parquet as it arrives, and
+# re-runs skip anything already cached, so an interruption costs seconds rather
+# than the whole 13-minute run.
+#
+# The cache is keyed by CIK only, so it does NOT know about changes to METRICS:
+# after adding or changing a metric, delete this directory to force a full refetch.
+CACHE_DIR = UNIVERSE_PATH.parent / "fundamentals_cache"
+CACHE_DIR.mkdir(exist_ok=True)
+
 frames = []
 failures = []
 
 for i, (_, row) in enumerate(universe.iterrows(), start=1):
 
+    cached = CACHE_DIR / f"{int(row['cik'])}.parquet"
+    if cached.exists():
+        frames.append(pd.read_parquet(cached))
+        continue
+
     try:
         df = build_company_frame(int(row["cik"]))
         if df is not None:
             df["ticker"] = row["ticker"]
+            df.to_parquet(cached, index=False)
             frames.append(df)
         else:
             failures.append((row["ticker"], "no usable tags"))
@@ -196,8 +237,13 @@ for i, (_, row) in enumerate(universe.iterrows(), start=1):
 
 fundamentals = pd.concat(frames, ignore_index=True)
 
+# Write under a temporary name and rename into place. A rename is atomic, so a
+# reader sees either the old complete file or the new complete file, never a
+# half-written one.
 FUNDAMENTALS_PATH = UNIVERSE_PATH.parent / "fundamentals.parquet"
-fundamentals.to_parquet(FUNDAMENTALS_PATH, index=False)
+temp_path = FUNDAMENTALS_PATH.with_suffix(".parquet.tmp")
+fundamentals.to_parquet(temp_path, index=False)
+temp_path.replace(FUNDAMENTALS_PATH)
 
 print(f"{len(frames)} companies, {len(fundamentals):,} rows -> {FUNDAMENTALS_PATH}")
 print("failures:", len(failures))
