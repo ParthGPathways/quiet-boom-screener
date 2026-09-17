@@ -1,0 +1,49 @@
+<svg viewBox="0 0 980 440" width="100%" role="img" aria-label="Growth acceleration against EV/EBITDA" style="max-width:980px"><rect x="0" y="0" width="980" height="440" fill="#fff"/><line x1="-25.6" y1="58" x2="-25.6" y2="382" stroke="#d1d5db" stroke-dasharray="4 4"/><line x1="58" y1="181.0" x2="922" y2="181.0" stroke="#d1d5db" stroke-dasharray="4 4"/><line x1="58" y1="382" x2="922" y2="382" stroke="#16181d"/><line x1="58" y1="58" x2="58" y2="382" stroke="#16181d"/><text x="301.2" y="400" font-size="11" fill="#6b7280" text-anchor="middle">+1</text><text x="48" y="232.0" font-size="11" fill="#6b7280" text-anchor="end">15x</text><text x="48" y="62.1" font-size="11" fill="#6b7280" text-anchor="end">20x</text><text x="490" y="428" font-size="12" fill="#6b7280" text-anchor="middle">growth acceleration (percentage points)</text><text transform="translate(16,220) rotate(-90)" font-size="12" fill="#6b7280" text-anchor="middle">EV / EBITDA (cheaper is higher)</text><circle cx="763.7" cy="315.9" r="13.5" fill="#1d4ed8" fill-opacity="0.55" stroke="#1d4ed8"><title>Multi-Utilities
+acceleration +2.4 pts
+EV/EBITDA 12.4x
+AI correlation -0.22
+12 companies</title></circle><text x="763.7" y="297.4" font-size="10.5" fill="#374151" text-anchor="middle">Multi-Utilities</text><circle cx="594.1" cy="359.7" r="15.1" fill="#1d4ed8" fill-opacity="0.55" stroke="#1d4ed8"><title>Electric Utilities
+acceleration +1.9 pts
+EV/EBITDA 11.1x
+AI correlation -0.25
+17 companies</title></circle><text x="594.1" y="339.5" font-size="10.5" fill="#374151" text-anchor="middle">Electric Utilities</text><circle cx="809.7" cy="338.8" r="11.0" fill="#1d4ed8" fill-opacity="0.55" stroke="#1d4ed8"><title>Health Care Facilities
+acceleration +2.6 pts
+EV/EBITDA 11.7x
+AI correlation -0.09
+6 companies</title></circle><circle cx="862.4" cy="241.4" r="11.0" fill="#9ca3af" fill-opacity="0.55" stroke="#9ca3af"><title>Oil & Gas Storage & Transportation
+acceleration +2.7 pts
+EV/EBITDA 14.6x
+AI correlation +0.12
+6 companies</title></circle><circle cx="567.3" cy="246.7" r="12.4" fill="#1d4ed8" fill-opacity="0.55" stroke="#1d4ed8"><title>Health Care Services
+acceleration +1.8 pts
+EV/EBITDA 14.4x
+AI correlation -0.08
+9 companies</title></circle><text x="567.3" y="229.4" font-size="10.5" fill="#374151" text-anchor="middle">Health Care Services</text><circle cx="811.0" cy="193.5" r="12.0" fill="#1d4ed8" fill-opacity="0.55" stroke="#1d4ed8"><title>Health Care REITs
+acceleration +2.6 pts
+EV/EBITDA 16.0x
+AI correlation -0.11
+8 companies</title></circle><circle cx="182.1" cy="151.8" r="16.0" fill="#9ca3af" fill-opacity="0.55" stroke="#9ca3af"><title>Health Care Equipment
+acceleration +0.6 pts
+EV/EBITDA 17.2x
+AI correlation +0.02
+20 companies</title></circle><text x="182.1" y="130.8" font-size="10.5" fill="#374151" text-anchor="middle">Health Care Equipment</text><circle cx="674.2" cy="80.3" r="15.7" fill="#9ca3af" fill-opacity="0.55" stroke="#9ca3af"><title>Aerospace & Defense
+acceleration +2.1 pts
+EV/EBITDA 19.3x
+AI correlation +0.19
+19 companies</title></circle><text x="674.2" y="59.6" font-size="10.5" fill="#374151" text-anchor="middle">Aerospace & Defense</text><circle cx="744.3" cy="168.5" r="13.2" fill="#9ca3af" fill-opacity="0.55" stroke="#9ca3af"><title>Construction & Engineering
+acceleration +2.4 pts
+EV/EBITDA 16.7x
+AI correlation +0.46
+11 companies</title></circle><text x="744.3" y="150.4" font-size="10.5" fill="#374151" text-anchor="middle">Construction & Engineering</text><circle cx="117.6" cy="110.9" r="13.2" fill="#9ca3af" fill-opacity="0.55" stroke="#9ca3af"><title>Electrical Components & Equipment
+acceleration +0.4 pts
+EV/EBITDA 18.4x
+AI correlation +0.33
+11 companies</title></circle><text x="117.6" y="92.8" font-size="10.5" fill="#374151" text-anchor="middle">Electrical Components & Equi</text><circle cx="457.0" cy="83.8" r="12.0" fill="#9ca3af" fill-opacity="0.55" stroke="#9ca3af"><title>Electronic Equipment & Instruments
+acceleration +1.5 pts
+EV/EBITDA 19.2x
+AI correlation +0.24
+8 companies</title></circle><circle cx="335.2" cy="93.2" r="12.0" fill="#9ca3af" fill-opacity="0.55" stroke="#9ca3af"><title>Technology Hardware, Storage & Peripherals
+acceleration +1.1 pts
+EV/EBITDA 19.0x
+AI correlation +0.55
+8 companies</title></circle></svg>
