@@ -23,6 +23,7 @@ STEPS = [
     ("build_universe.py",     "scrape S&P 500 + 400 constituents, attach SEC CIKs", 2),
     ("fetch_prices.py",       "download 10 years of daily prices",                  2),
     ("fetch_fundamentals.py", "download quarterly fundamentals from EDGAR",         2),
+    ("ai_keywords.py",        "read 10-K business sections, count AI terms",        2),
     ("build_database.py",     "load the raw files into SQLite",                     1),
     ("build_site.py",         "run the screens and render the dashboard",           0),
 ]

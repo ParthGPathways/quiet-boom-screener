@@ -33,9 +33,12 @@ Each milestone is independently CV-mentionable — the project has value even mi
   - `src/boom_score.py`; median company (not aggregate), sub-industries with >=5 companies
   - breadth (>=70% of companies growing) is a gate, not a scored component
   - rates compared to a long baseline (2017-23), levels to a short one (2021-23)
-- [x] 3.2 Quiet filter: correlation vs AI basket (`src/quiet_filter.py`)
-  - AI factor = 19-name equal-weighted basket MINUS equal-weighted universe, so market beta is removed
-  - 10-K keyword screen not built: the correlation screen already separated loud from quiet cleanly
+- [x] 3.2 Quiet filter: both screens built
+  - `src/quiet_filter.py` - AI factor = 19-name equal-weighted basket MINUS equal-weighted
+    universe, so market beta is removed; measures what investors believe
+  - `src/ai_keywords.py` - AI terms per 1,000 words of each 10-K's Item 1 (Business);
+    measures what companies say about themselves. 92% of filings parse
+  - the two agree only loosely (rank correlation 0.36), which is why both are kept
 - [x] 3.3 Ranked "quiet boom" industry table (`src/rank_industries.py`)
   - quiet_boom = z(boom_score) - z(ai_correlation), gated on acceleration > 0
   - 19 industries qualify; utilities lead on capex, insurance on premium-cycle growth

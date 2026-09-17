@@ -1,12 +1,12 @@
-<svg viewBox="0 0 980 440" width="100%" role="img" aria-label="Growth acceleration against EV/EBITDA by industry" style="max-width:980px"><rect width="980" height="440" fill="#fff"/><line x1="629.0" y1="58" x2="629.0" y2="382" stroke="#d1d5db" stroke-dasharray="4 4"/><line x1="70" y1="183.5" x2="922" y2="183.5" stroke="#d1d5db" stroke-dasharray="4 4"/><text x="78" y="72" font-size="11" fill="#9ca3af">cheaper &amp; faster growing</text><line x1="171.1" y1="382" x2="171.1" y2="387" stroke="#9ca3af"/><text x="171.1" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+0.5</text><line x1="321.8" y1="382" x2="321.8" y2="387" stroke="#9ca3af"/><text x="321.8" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+1</text><line x1="472.6" y1="382" x2="472.6" y2="387" stroke="#9ca3af"/><text x="472.6" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+1.5</text><line x1="623.4" y1="382" x2="623.4" y2="387" stroke="#9ca3af"/><text x="623.4" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+2</text><line x1="774.1" y1="382" x2="774.1" y2="387" stroke="#9ca3af"/><text x="774.1" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+2.5</text><line x1="65" y1="322.8" x2="70" y2="322.8" stroke="#9ca3af"/><text x="60" y="326.8" font-size="11" fill="#6b7280" text-anchor="end">12x</text><line x1="65" y1="259.3" x2="70" y2="259.3" stroke="#9ca3af"/><text x="60" y="263.3" font-size="11" fill="#6b7280" text-anchor="end">14x</text><line x1="65" y1="195.7" x2="70" y2="195.7" stroke="#9ca3af"/><text x="60" y="199.7" font-size="11" fill="#6b7280" text-anchor="end">16x</text><line x1="65" y1="132.1" x2="70" y2="132.1" stroke="#9ca3af"/><text x="60" y="136.1" font-size="11" fill="#6b7280" text-anchor="end">18x</text><line x1="65" y1="68.5" x2="70" y2="68.5" stroke="#9ca3af"/><text x="60" y="72.5" font-size="11" fill="#6b7280" text-anchor="end">20x</text><line x1="70" y1="382" x2="922" y2="382" stroke="#16181d"/><line x1="70" y1="58" x2="70" y2="382" stroke="#16181d"/><text x="496" y="426" font-size="12" fill="#6b7280" text-anchor="middle">growth acceleration (percentage points above the industry's own long-run rate)</text><text transform="translate(18,220) rotate(-90)" font-size="12" fill="#6b7280" text-anchor="middle">EV / EBITDA (cheaper is higher)</text><g><circle cx="211.9" cy="156.2" r="21.0" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/><text x="211.9" y="160.2" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">13</text><title>13. Health Care Equipment
+<svg viewBox="0 0 980 440" width="100%" role="img" aria-label="Growth acceleration against EV/EBITDA by industry" style="max-width:980px"><rect width="980" height="440" fill="#fff"/><line x1="629.0" y1="58" x2="629.0" y2="382" stroke="#d1d5db" stroke-dasharray="4 4"/><line x1="70" y1="183.5" x2="922" y2="183.5" stroke="#d1d5db" stroke-dasharray="4 4"/><text x="78" y="72" font-size="11" fill="#9ca3af">cheaper &amp; faster growing</text><line x1="171.1" y1="382" x2="171.1" y2="387" stroke="#9ca3af"/><text x="171.1" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+0.5</text><line x1="321.8" y1="382" x2="321.8" y2="387" stroke="#9ca3af"/><text x="321.8" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+1</text><line x1="472.6" y1="382" x2="472.6" y2="387" stroke="#9ca3af"/><text x="472.6" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+1.5</text><line x1="623.4" y1="382" x2="623.4" y2="387" stroke="#9ca3af"/><text x="623.4" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+2</text><line x1="774.1" y1="382" x2="774.1" y2="387" stroke="#9ca3af"/><text x="774.1" y="401" font-size="11" fill="#6b7280" text-anchor="middle">+2.5</text><line x1="65" y1="322.8" x2="70" y2="322.8" stroke="#9ca3af"/><text x="60" y="326.8" font-size="11" fill="#6b7280" text-anchor="end">12x</text><line x1="65" y1="259.3" x2="70" y2="259.3" stroke="#9ca3af"/><text x="60" y="263.3" font-size="11" fill="#6b7280" text-anchor="end">14x</text><line x1="65" y1="195.7" x2="70" y2="195.7" stroke="#9ca3af"/><text x="60" y="199.7" font-size="11" fill="#6b7280" text-anchor="end">16x</text><line x1="65" y1="132.1" x2="70" y2="132.1" stroke="#9ca3af"/><text x="60" y="136.1" font-size="11" fill="#6b7280" text-anchor="end">18x</text><line x1="65" y1="68.5" x2="70" y2="68.5" stroke="#9ca3af"/><text x="60" y="72.5" font-size="11" fill="#6b7280" text-anchor="end">20x</text><line x1="70" y1="382" x2="922" y2="382" stroke="#16181d"/><line x1="70" y1="58" x2="70" y2="382" stroke="#16181d"/><text x="496" y="426" font-size="12" fill="#6b7280" text-anchor="middle">growth acceleration (percentage points above the industry's own long-run rate)</text><text transform="translate(18,220) rotate(-90)" font-size="12" fill="#6b7280" text-anchor="middle">EV / EBITDA (cheaper is higher)</text><g><circle cx="211.9" cy="156.2" r="21.0" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/><text x="211.9" y="160.2" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">14</text><title>14. Health Care Equipment
 acceleration +0.6 pts
 EV/EBITDA 17.2x
 AI correlation +0.02
-20 companies</title></g><g><circle cx="665.9" cy="89.4" r="20.7" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/><text x="665.9" y="93.4" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">14</text><title>14. Aerospace & Defense
+20 companies</title></g><g><circle cx="665.9" cy="89.4" r="20.7" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/><text x="665.9" y="93.4" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">13</text><title>13. Aerospace & Defense
 acceleration +2.1 pts
 EV/EBITDA 19.3x
 AI correlation +0.19
-19 companies</title></g><g><circle cx="592.0" cy="350.6" r="20.1" fill="#1d4ed8" fill-opacity="0.55" stroke="#1e40af"/><text x="592.0" y="354.6" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">4</text><title>4. Electric Utilities
+19 companies</title></g><g><circle cx="592.0" cy="350.6" r="20.1" fill="#1d4ed8" fill-opacity="0.55" stroke="#1e40af"/><text x="592.0" y="354.6" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">7</text><title>7. Electric Utilities
 acceleration +1.9 pts
 EV/EBITDA 11.1x
 AI correlation -0.25
@@ -14,7 +14,7 @@ AI correlation -0.25
 acceleration +2.4 pts
 EV/EBITDA 12.4x
 AI correlation -0.22
-12 companies</title></g><g><circle cx="730.6" cy="171.9" r="17.9" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/><text x="730.6" y="175.9" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">16</text><title>16. Construction & Engineering
+12 companies</title></g><g><circle cx="730.6" cy="171.9" r="17.9" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/><text x="730.6" y="175.9" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">15</text><title>15. Construction & Engineering
 acceleration +2.4 pts
 EV/EBITDA 16.7x
 AI correlation +0.46
@@ -22,7 +22,7 @@ AI correlation +0.46
 acceleration +0.4 pts
 EV/EBITDA 18.4x
 AI correlation +0.33
-11 companies</title></g><g><circle cx="567.3" cy="245.0" r="17.0" fill="#1d4ed8" fill-opacity="0.55" stroke="#1e40af"/><text x="567.3" y="249.0" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">10</text><title>10. Health Care Services
+11 companies</title></g><g><circle cx="567.3" cy="245.0" r="17.0" fill="#1d4ed8" fill-opacity="0.55" stroke="#1e40af"/><text x="567.3" y="249.0" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">9</text><title>9. Health Care Services
 acceleration +1.8 pts
 EV/EBITDA 14.4x
 AI correlation -0.08
@@ -42,7 +42,7 @@ AI correlation +0.55
 acceleration +2.6 pts
 EV/EBITDA 11.7x
 AI correlation -0.09
-6 companies</title></g><g><circle cx="839.5" cy="240.0" r="15.6" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/><text x="839.5" y="244.0" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">9</text><title>9. Oil & Gas Storage & Transportation
+6 companies</title></g><g><circle cx="839.5" cy="240.0" r="15.6" fill="#9ca3af" fill-opacity="0.55" stroke="#6b7280"/><text x="839.5" y="244.0" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">8</text><title>8. Oil & Gas Storage & Transportation
 acceleration +2.7 pts
 EV/EBITDA 14.6x
 AI correlation +0.12

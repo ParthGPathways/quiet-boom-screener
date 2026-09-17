@@ -115,14 +115,17 @@ the thesis: accelerating and still cheap.</p>
 <div class="scroll"><table>
 <thead><tr>
 <th>Industry</th><th>n</th><th>Verdict</th><th>Quiet boom</th><th>Accel</th>
-<th>AI corr</th><th>EV/EBITDA</th><th>DCF</th><th>Breadth</th>
+<th>AI corr</th><th>AI talk</th><th>EV/EBITDA</th><th>DCF</th><th>Breadth</th>
 </tr></thead>
 <tbody>{{ rows }}</tbody>
 </table></div>
 <p class="note">Verdict combines the growth signal with cheapness. Accel is
-percentage points of revenue growth above the industry's long-run rate. AI corr is
-correlation with an AI basket after market movement is removed &mdash; lower is
-quieter. EV/EBITDA is blank for financials, where it does not apply.</p>
+percentage points of revenue growth above the industry's long-run rate. Two
+independent measures of how loud an industry's AI story is: <strong>AI corr</strong>
+is correlation with an AI basket after market movement is removed (what investors
+believe), and <strong>AI talk</strong> is AI mentions per thousand words of the
+companies' own 10-K business sections (what they say about themselves). Lower is
+quieter on both. EV/EBITDA is blank for financials, where it does not apply.</p>
 </div></body></html>"""
 
 INDUSTRY_TEMPLATE = """<!doctype html>
@@ -286,6 +289,7 @@ for name, row in table.iterrows():
         + signed(row["quiet_boom"])
         + signed(row["acceleration"], 1)
         + signed(row["ai_correlation"])
+        + plain(row["ai_talk"], 2)
         + plain(row["ev_ebitda"])
         + plain(row["dcf_upside"], 2)
         + plain(row["breadth"], 2)
@@ -357,8 +361,8 @@ def markdown_cell(value, digits=2, sign=False):
 
 
 lines = [
-    "| # | Industry | n | Verdict | Accel | AI corr | EV/EBITDA | Breadth |",
-    "|---|---|---|---|---|---|---|---|",
+    "| # | Industry | n | Verdict | Accel | AI corr | AI talk | EV/EBITDA | Breadth |",
+    "|---|---|---|---|---|---|---|---|---|",
 ]
 for position, (name, row) in enumerate(table.head(10).iterrows(), start=1):
     lines.append(
@@ -366,6 +370,7 @@ for position, (name, row) in enumerate(table.head(10).iterrows(), start=1):
         f'| {markdown_cell(row["verdict_score"], 2, sign=True)} '
         f'| {markdown_cell(row["acceleration"], 1, sign=True)} '
         f'| {markdown_cell(row["ai_correlation"], 2, sign=True)} '
+        f'| {markdown_cell(row["ai_talk"], 2)} '
         f'| {markdown_cell(row["ev_ebitda"], 1)} '
         f'| {markdown_cell(row["breadth"], 2)} |'
     )

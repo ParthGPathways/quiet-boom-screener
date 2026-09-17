@@ -20,7 +20,7 @@ Industries are ranked on three independent screens:
 | screen | question | measure |
 |---|---|---|
 | **Boom** | is it growing faster than it normally does? | median company revenue growth, recent vs long-run baseline, confirmed by margin expansion and capex |
-| **Quiet** | has the market attached an AI story to it? | correlation with an AI basket, after market movement is removed |
+| **Quiet** | has an AI story been attached to it? | two independent measures: correlation with an AI basket after market movement is removed (what investors believe), and AI mentions per 1,000 words of the companies' own 10-K business sections (what they say about themselves) |
 | **Value** | is the growth already priced in? | EV/EBITDA against peers, plus a simplified DCF |
 
 **Utilities** come out as the strongest candidate: revenue growth accelerating,
@@ -37,7 +37,7 @@ points above the industry's own long-run rate. Vertical: EV/EBITDA, inverted so
 cheaper sits higher. Bubble size is company count. Dashed lines mark the medians, so
 the top-right quadrant is the thesis: growing faster than most, and cheaper than most.*
 
-*7 of 19 industries are absent from the chart because EV/EBITDA does not apply to financials: 1. Insurance Brokers, 2. Property & Casualty Insurance, 5. Asset Management & Custody Banks, 7. Investment Banking & Brokerage, 8. Financial Exchanges & Data, 12. Regional Banks, 15. Life & Health Insurance.*
+*7 of 19 industries are absent from the chart because EV/EBITDA does not apply to financials: 1. Insurance Brokers, 2. Asset Management & Custody Banks, 4. Property & Casualty Insurance, 5. Investment Banking & Brokerage, 10. Financial Exchanges & Data, 12. Regional Banks, 16. Life & Health Insurance.*
 
 ### How 19 industries were selected
 
@@ -57,18 +57,18 @@ growing rather than carried by one name, and accelerating against its own histor
 
 ### Top 10 of 19 qualifying industries
 
-| # | Industry | n | Verdict | Accel | AI corr | EV/EBITDA | Breadth |
-|---|---|---|---|---|---|---|---|
-| 1 | Insurance Brokers | 7 | +3.28 | +7.8 | -0.29 | — | 0.92 |
-| 2 | Property & Casualty Insurance | 15 | +2.60 | +4.3 | -0.25 | — | 1.00 |
-| 3 | Multi-Utilities | 12 | +2.48 | +2.4 | -0.22 | 12.4 | 0.79 |
-| 4 | Electric Utilities | 17 | +1.87 | +1.9 | -0.25 | 11.1 | 0.79 |
-| 5 | Asset Management & Custody Banks | 17 | +1.78 | +5.6 | +0.16 | — | 0.79 |
-| 6 | Health Care Facilities | 6 | +1.66 | +2.6 | -0.09 | 11.7 | 1.00 |
-| 7 | Investment Banking & Brokerage | 7 | +1.14 | +9.7 | +0.27 | — | 1.00 |
-| 8 | Financial Exchanges & Data | 9 | +0.74 | +0.8 | -0.10 | — | 1.00 |
-| 9 | Oil & Gas Storage & Transportation | 6 | +0.67 | +2.7 | +0.12 | 14.6 | 0.83 |
-| 10 | Health Care Services | 9 | +0.66 | +1.8 | -0.08 | 14.4 | 1.00 |
+| # | Industry | n | Verdict | Accel | AI corr | AI talk | EV/EBITDA | Breadth |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Insurance Brokers | 7 | +2.80 | +7.8 | -0.29 | 0.00 | — | 0.92 |
+| 2 | Asset Management & Custody Banks | 17 | +2.15 | +5.6 | +0.16 | 0.14 | — | 0.79 |
+| 3 | Multi-Utilities | 12 | +2.15 | +2.4 | -0.22 | 0.00 | 12.4 | 0.79 |
+| 4 | Property & Casualty Insurance | 15 | +2.03 | +4.3 | -0.25 | 0.31 | — | 1.00 |
+| 5 | Investment Banking & Brokerage | 7 | +1.66 | +9.7 | +0.27 | 0.27 | — | 1.00 |
+| 6 | Health Care Facilities | 6 | +1.53 | +2.6 | -0.09 | 0.12 | 11.7 | 1.00 |
+| 7 | Electric Utilities | 17 | +1.48 | +1.9 | -0.25 | 0.00 | 11.1 | 0.79 |
+| 8 | Oil & Gas Storage & Transportation | 6 | +0.67 | +2.7 | +0.12 | — | 14.6 | 0.83 |
+| 9 | Health Care Services | 9 | +0.57 | +1.8 | -0.08 | 0.10 | 14.4 | 1.00 |
+| 10 | Financial Exchanges & Data | 9 | +0.38 | +0.8 | -0.10 | 0.49 | — | 1.00 |
 
 *Accel is percentage points of revenue growth above the industry's long-run rate.
 AI corr is correlation with an AI basket after market movement is removed — lower is
@@ -111,7 +111,8 @@ src/fetch_prices.py        10 years of daily adjusted prices, batched and rate l
 src/fetch_fundamentals.py  8 metrics per company from EDGAR companyfacts
 src/build_database.py      schema + load into SQLite, with a plausibility filter
 src/boom_score.py          growth acceleration, margin expansion, capex cycle
-src/quiet_filter.py        correlation against an AI basket
+src/quiet_filter.py        correlation against an AI basket (what investors believe)
+src/ai_keywords.py         AI terms per 1,000 words of each 10-K's business section
 src/rank_industries.py     the two screens combined
 src/valuation.py           EV/EBITDA and P/E per company and industry
 src/dcf.py                 simplified DCF: unlevered FCF, CAPM beta, terminal value
@@ -147,8 +148,9 @@ of specific failures found along the way:
 
 ## Limitations
 
-- The AI screen uses market correlation only; a keyword screen on 10-K business
-  descriptions would be an independent second check.
+- The keyword screen reads Item 1 (Business) only, and 8% of filings structure that
+  section in a way the parser cannot locate; those companies are recorded as missing
+  rather than measured over a different section.
 - The AI basket's members are themselves in the universe, so their industries are
   slightly self-correlated. Measured at -0.004 to -0.064, which changes no ordering.
 - EV/EBITDA is not meaningful for banks and insurers; those rest on the DCF alone.
