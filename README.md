@@ -105,21 +105,21 @@ Then open `site/index.html`.
 
 ## Layout
 
-```
-src/build_universe.py      S&P 500 + 400 constituents, joined to SEC CIKs
-src/fetch_prices.py        10 years of daily adjusted prices, batched and rate limited
-src/fetch_fundamentals.py  8 metrics per company from EDGAR companyfacts
-src/build_database.py      schema + load into SQLite, with a plausibility filter
-src/boom_score.py          growth acceleration, margin expansion, capex cycle
-src/quiet_filter.py        correlation against an AI basket (what investors believe)
-src/ai_keywords.py         AI terms per 1,000 words of each 10-K's business section
-src/rank_industries.py     the two screens combined
-src/valuation.py           EV/EBITDA and P/E per company and industry
-src/dcf.py                 simplified DCF: unlevered FCF, CAPM beta, terminal value
-src/verdict.py             the cheap-vs-growth verdict
-src/build_site.py          renders site/ (inline SVG, no CDN)
-src/rebuild.py             one-command rebuild
-```
+| file | what it does |
+|---|---|
+| [src/build_universe.py](src/build_universe.py) | S&P 500 + 400 constituents, joined to SEC CIKs |
+| [src/fetch_prices.py](src/fetch_prices.py) | 10 years of daily adjusted prices, batched and rate limited |
+| [src/fetch_fundamentals.py](src/fetch_fundamentals.py) | 8 metrics per company from EDGAR companyfacts |
+| [src/build_database.py](src/build_database.py) | schema + load into SQLite, with a plausibility filter |
+| [src/boom_score.py](src/boom_score.py) | growth acceleration, margin expansion, capex cycle |
+| [src/quiet_filter.py](src/quiet_filter.py) | correlation against an AI basket (what investors believe) |
+| [src/ai_keywords.py](src/ai_keywords.py) | AI terms per 1,000 words of each 10-K's business section |
+| [src/rank_industries.py](src/rank_industries.py) | the two screens combined |
+| [src/valuation.py](src/valuation.py) | EV/EBITDA and P/E per company and industry |
+| [src/dcf.py](src/dcf.py) | simplified DCF: unlevered FCF, CAPM beta, terminal value |
+| [src/verdict.py](src/verdict.py) | the cheap-vs-growth verdict |
+| [src/build_site.py](src/build_site.py) | renders site/ (inline SVG, no CDN) |
+| [src/rebuild.py](src/rebuild.py) | one-command rebuild |
 
 ---
 
